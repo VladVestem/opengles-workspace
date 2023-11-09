@@ -12,6 +12,31 @@
 
 namespace opengles_workspace
 { 
+	void DrawTriangle(float x, float y, float z, float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f)
+	{
+		// Triangle vertices
+		GLfloat vVertices[] = 	{
+								 x, y, z,			// Top
+								 x-0.5f, y-1.0f, z,	// Bottom left
+								 x+0.5f, y-1.0f, z	// Bottom right
+								};
+		// Load the vertex data
+		glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
+		glEnableVertexAttribArray ( 0 );
+
+		// Colour array
+		float colours[] =	{
+							 red, green, blue, alpha,
+							 red, green, blue, alpha,
+							 red, green, blue, alpha
+							};
+		// Load the colour data
+		glVertexAttribPointer ( 1, 3, GL_FLOAT, GL_FALSE, 0, colours );
+		glEnableVertexAttribArray ( 1 );
+
+		glDrawArrays ( GL_TRIANGLES, 0, 3 );
+	}
+	
 	char vShaderStr[] =
 		"#version 300 es \n"
 		"\n"
@@ -77,27 +102,7 @@ namespace opengles_workspace
 		// Clear the color buffer
 		glClear ( GL_COLOR_BUFFER_BIT );
 
-		// Triangle vertices
-		GLfloat vVertices[] = 	{
-								 0.0f, 0.5f, 0.0f,
-								-0.5f, -0.5f, 0.0f,
-								 0.5f, -0.5f, 0.0f
-								};
-		// Load the vertex data
-		glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
-		glEnableVertexAttribArray ( 0 );
-
-		// Colour array
-		float colours[] =	{
-							 1.0f, 1.0f, 1.0f, 1.0f,
-							 1.0f, 1.0f, 1.0f, 1.0f,
-							 1.0f, 1.0f, 1.0f, 1.0f
-							};
-		// Load the colour data
-		glVertexAttribPointer ( 1, 3, GL_FLOAT, GL_FALSE, 0, colours );
-		glEnableVertexAttribArray ( 1 );
-
-		glDrawArrays ( GL_TRIANGLES, 0, 3 );
+		DrawTriangle(0.0f, 0.5f, 0.0f);
 
 		// GL code end
 		glfwSwapBuffers(window());
