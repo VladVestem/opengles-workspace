@@ -129,8 +129,20 @@ namespace opengles_workspace
 		// Clear the color buffer
 		glClear ( GL_COLOR_BUFFER_BIT );
 
-		DrawTriangle(0.0f, 0.5f, 0.0f);
-		DrawSquare(-1.0f, 1.0f, 0.0f);
+		//DrawTriangle(0.0f, 0.5f, 0.0f);
+		//DrawSquare(-1.0f, 1.0f, 0.0f);
+
+		for(int i = 0; i < 10; i++)
+		{
+			float stepX = (float)i/(float)5;
+			float isRed = (i % 2 != 0) ? 1.0f : 0.0f;
+			for(int j = 0; j< 10; j++)
+			{
+				float stepY = (float)j/(float)5;
+				isRed = (isRed == 1.0f) ? 0.0f : 1.0f; // Invert colour on every new line
+				DrawSquare((-1.0f+stepX), (1.0f-stepY), 0.0f, 1.0f, (1.0f-isRed), (1.0f-isRed));
+			}
+		}
 
 		// GL code end
 		glfwSwapBuffers(window());
