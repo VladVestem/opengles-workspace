@@ -1,6 +1,6 @@
 ## Prerequisites:
 ```shell
-sudo apt install build-essential libxi-dev libxinerama-dev libxcursor-dev
+sudo apt install build-essential cmake libxrandr-dev libxi-dev libxinerama-dev libxcursor-dev
 ```
 
 ## Building 
