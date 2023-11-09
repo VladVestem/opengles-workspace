@@ -36,6 +36,33 @@ namespace opengles_workspace
 
 		glDrawArrays ( GL_TRIANGLES, 0, 3 );
 	}
+
+	void DrawSquare(float x, float y, float z, float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f)
+	{
+		// Triangle vertices
+		GLfloat vVertices[] = 	{
+								 x, y, 0.0f,			// Top left
+								 x+0.2f, y, 0.0f,		// Top right
+								 x+0.2f, y-0.2f, 0.0f,	// Bottom right
+								 x, y-0.2f, 0.0f		// Bottom left
+								};
+		// Load the vertex data
+		glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
+		glEnableVertexAttribArray ( 0 );
+
+		// Colour array
+		float colours[] =	{
+							 red, green, blue, alpha,
+							 red, green, blue, alpha,
+							 red, green, blue, alpha,
+							 red, green, blue, alpha
+							};
+		// Load the colour data
+		glVertexAttribPointer ( 1, 4, GL_FLOAT, GL_FALSE, 0, colours );
+		glEnableVertexAttribArray ( 1 );
+
+		glDrawArrays ( GL_QUADS, 0, 4 );
+	}
 	
 	char vShaderStr[] =
 		"#version 300 es \n"
@@ -103,6 +130,7 @@ namespace opengles_workspace
 		glClear ( GL_COLOR_BUFFER_BIT );
 
 		DrawTriangle(0.0f, 0.5f, 0.0f);
+		DrawSquare(-1.0f, 1.0f, 0.0f);
 
 		// GL code end
 		glfwSwapBuffers(window());
