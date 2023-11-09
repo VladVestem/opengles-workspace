@@ -14,19 +14,27 @@ namespace opengles_workspace
 { 
 	char vShaderStr[] =
 		"#version 300 es \n"
-		"layout(location = 0) in vec4 vPosition; \n"
+		"\n"
+		"layout(location = 0) in vec4 a_position; \n"
+		"layout(location = 1) in vec4 a_colour; \n"
+		"out vec4 v_colour; \n"
+		"\n"
 		"void main() \n"
 		"{ \n"
-		" gl_Position = vPosition; \n"
+		" gl_Position = a_position; \n"
+		" v_colour = a_colour; \n"
 		"} \n";
 	
 	char fShaderStr[] =
 		"#version 300 es \n"
 		"precision mediump float; \n"
+		"\n"
+		"in vec4 v_colour; \n"
 		"out vec4 fragColor; \n"
+		"\n"
 		"void main() \n"
 		"{ \n"
-		" fragColor = vec4 ( 1.0, 0.0, 0.0, 1.0 ); \n"
+		" fragColor = v_colour; \n"
 		"} \n";
 
 	GLuint programObject;
@@ -75,10 +83,19 @@ namespace opengles_workspace
 								-0.5f, -0.5f, 0.0f,
 								 0.5f, -0.5f, 0.0f
 								};
-
 		// Load the vertex data
 		glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
 		glEnableVertexAttribArray ( 0 );
+
+		// Colour array
+		float colours[] =	{
+							 1.0f, 1.0f, 1.0f, 1.0f,
+							 1.0f, 1.0f, 1.0f, 1.0f,
+							 1.0f, 1.0f, 1.0f, 1.0f
+							};
+		// Load the colour data
+		glVertexAttribPointer ( 1, 3, GL_FLOAT, GL_FALSE, 0, colours );
+		glEnableVertexAttribArray ( 1 );
 
 		glDrawArrays ( GL_TRIANGLES, 0, 3 );
 
