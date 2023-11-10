@@ -10,8 +10,36 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 namespace opengles_workspace
 { 
+	void LoadTexture(std::string path)
+	{
+		unsigned int texture;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		// set the texture wrapping/filtering options (on currently bound texture)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+		// load and generate the texture
+		int width, height, nrChannels;
+		unsigned char *data = stbi_load(path.c_str(), &width, &height,
+		&nrChannels, 0);
+		if (data)
+		{
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+			GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+		else { printf("Failed to load texture\n"); }
+	}
+
 	void DrawTriangle(float x, float y, float z, float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f)
 	{
 		// Triangle vertices
@@ -64,6 +92,46 @@ namespace opengles_workspace
 		glDrawArrays ( GL_QUADS, 0, 4 );
 	}
 
+	void DrawSquareTextured(float x, float y, float z, float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f)
+	{
+		// Triangle vertices
+		GLfloat vVertices[] = 	{
+								 x, y, z,			// Top left
+								 x+0.2f, y, z,		// Top right
+								 x+0.2f, y-0.2f, z,	// Bottom right
+								 x, y-0.2f, z		// Bottom left
+								};
+		// Load the vertex data
+		glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
+		glEnableVertexAttribArray ( 0 );
+
+		// Colour array
+		float colours[] =	{
+							 red, green, blue, alpha,
+							 red, green, blue, alpha,
+							 red, green, blue, alpha,
+							 red, green, blue, alpha
+							};
+		// Load the colour data
+		glVertexAttribPointer ( 1, 4, GL_FLOAT, GL_FALSE, 0, colours );
+		glEnableVertexAttribArray ( 1 );
+
+		// Texture coord
+		GLfloat texCoord[] = 	{
+								 1.0f, 1.0f,		// Top right
+								 0.0f, 1.0f,		// Top left
+								 0.0f, 0.0f,		// Bottom left
+								 1.0f, 0.0f,		// Bottom right
+								};
+		// Load the vertex data
+		glVertexAttribPointer ( 2, 2, GL_FLOAT, GL_FALSE, 0, texCoord );
+		glEnableVertexAttribArray ( 2 );
+
+		LoadTexture("../checkerboard.jpg");
+
+		glDrawArrays ( GL_QUADS, 0, 4 );
+	}
+
 	void DrawCheckerboard(int size)
 	{
 		for(int i = 0; i < size; i++)
@@ -78,18 +146,34 @@ namespace opengles_workspace
 			}
 		}
 	}
+
+	void DrawCheckerboardTextured()
+	{
+		for(int i = 0; i < 5; i++)
+		{
+			float stepX = (float)i/5;
+			for(int j = 0; j< 5; j++)
+			{
+				float stepY = (float)j/5;
+				DrawSquareTextured((-0.5f+stepX), (0.5f-stepY), 0.0f);
+			}
+		}
+	}
 	
 	char vShaderStr[] =
 		"#version 300 es \n"
 		"\n"
 		"layout(location = 0) in vec4 a_position; \n"
 		"layout(location = 1) in vec4 a_colour; \n"
+		"layout(location = 2) in vec2 a_textures; \n"
 		"out vec4 v_colour; \n"
+		"out vec2 v_textures; \n"
 		"\n"
 		"void main() \n"
 		"{ \n"
 		" gl_Position = a_position; \n"
 		" v_colour = a_colour; \n"
+		" v_textures = a_textures; \n"
 		"} \n";
 	
 	char fShaderStr[] =
@@ -97,11 +181,13 @@ namespace opengles_workspace
 		"precision mediump float; \n"
 		"\n"
 		"in vec4 v_colour; \n"
+		"in vec2 v_textures; \n"
 		"out vec4 fragColor; \n"
+		"uniform sampler2D ourTexture; \n"
 		"\n"
 		"void main() \n"
 		"{ \n"
-		" fragColor = v_colour; \n"
+		" fragColor =  texture(ourTexture, v_textures); \n"
 		"} \n";
 
 	GLuint programObject;
@@ -146,7 +232,9 @@ namespace opengles_workspace
 
 		//DrawTriangle(0.0f, 0.5f, 0.0f);
 		//DrawSquare(-1.0f, 1.0f, 0.0f);
-		DrawCheckerboard(20);
+		//DrawCheckerboard(10);
+		//DrawSquareTextured(-1.0f, 1.0f, 0.0f);
+		DrawCheckerboardTextured();
 
 		// GL code end
 		glfwSwapBuffers(window());
