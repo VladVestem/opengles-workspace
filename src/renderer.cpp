@@ -41,10 +41,10 @@ namespace opengles_workspace
 	{
 		// Triangle vertices
 		GLfloat vVertices[] = 	{
-								 x, y, 0.0f,			// Top left
-								 x+0.2f, y, 0.0f,		// Top right
-								 x+0.2f, y-0.2f, 0.0f,	// Bottom right
-								 x, y-0.2f, 0.0f		// Bottom left
+								 x, y, z,			// Top left
+								 x+0.2f, y, z,		// Top right
+								 x+0.2f, y-0.2f, z,	// Bottom right
+								 x, y-0.2f, z		// Bottom left
 								};
 		// Load the vertex data
 		glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
@@ -62,6 +62,21 @@ namespace opengles_workspace
 		glEnableVertexAttribArray ( 1 );
 
 		glDrawArrays ( GL_QUADS, 0, 4 );
+	}
+
+	void DrawCheckerboard(int size)
+	{
+		for(int i = 0; i < size; i++)
+		{
+			float stepX = (float)i/(size/2);
+			float isRed = (i % 2 != 0) ? 1.0f : 0.0f;
+			for(int j = 0; j< size; j++)
+			{
+				float stepY = (float)j/(size/2);
+				isRed = (isRed == 1.0f) ? 0.0f : 1.0f; // Invert colour on every new line
+				DrawSquare((-1.0f+stepX), (1.0f-stepY), 0.0f, 1.0f, (1.0f-isRed), (1.0f-isRed));
+			}
+		}
 	}
 	
 	char vShaderStr[] =
@@ -131,18 +146,7 @@ namespace opengles_workspace
 
 		//DrawTriangle(0.0f, 0.5f, 0.0f);
 		//DrawSquare(-1.0f, 1.0f, 0.0f);
-
-		for(int i = 0; i < 10; i++)
-		{
-			float stepX = (float)i/(float)5;
-			float isRed = (i % 2 != 0) ? 1.0f : 0.0f;
-			for(int j = 0; j< 10; j++)
-			{
-				float stepY = (float)j/(float)5;
-				isRed = (isRed == 1.0f) ? 0.0f : 1.0f; // Invert colour on every new line
-				DrawSquare((-1.0f+stepX), (1.0f-stepY), 0.0f, 1.0f, (1.0f-isRed), (1.0f-isRed));
-			}
-		}
+		DrawCheckerboard(20);
 
 		// GL code end
 		glfwSwapBuffers(window());
