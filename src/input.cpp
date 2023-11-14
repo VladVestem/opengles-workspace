@@ -42,7 +42,7 @@ namespace opengles_workspace {
 		}
 
 		void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-			fprintf(stderr, "key_callback(key=%d, scancode=%d, action=%d, mods=%d\n", key, scancode, action, mods);
+			//fprintf(stderr, "key_callback(key=%d, scancode=%d, action=%d, mods=%d\n", key, scancode, action, mods);
 			for (auto& cb : mKeyCallbacks) {
 				auto translatedKey = toKey(key);
 				if (!translatedKey) {
@@ -70,6 +70,16 @@ namespace opengles_workspace {
 				return Key::DOWN;
 			case GLFW_KEY_SPACE:
 				return Key::SPACE;
+			case GLFW_KEY_W:
+				return Key::W;
+			case GLFW_KEY_A:
+				return Key::A;
+			case GLFW_KEY_S:
+				return Key::S;
+			case GLFW_KEY_D:
+				return Key::D;
+			case GLFW_KEY_E:
+				return Key::E;
 			default:
 				return {};
 			}

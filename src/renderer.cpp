@@ -13,9 +13,11 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#include <game_logic.hpp>
+
 namespace opengles_workspace
-{ 
-	void LoadTexture(std::string path)
+{
+	void LoadTexture(const char* path)
 	{
 		unsigned int texture;
 		glGenTextures(1, &texture);
@@ -29,7 +31,7 @@ namespace opengles_workspace
 
 		// load and generate the texture
 		int width, height, nrChannels;
-		unsigned char *data = stbi_load(path.c_str(), &width, &height,
+		unsigned char *data = stbi_load(path, &width, &height,
 		&nrChannels, 0);
 		if (data)
 		{
@@ -37,7 +39,7 @@ namespace opengles_workspace
 			GL_UNSIGNED_BYTE, data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
-		else { printf("Failed to load texture\n"); }
+		else { printf("Failed to load texture at [%s]\n", path); }
 	}
 
 	void DrawTriangle(float x, float y, float z, float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f)
@@ -92,42 +94,31 @@ namespace opengles_workspace
 		glDrawArrays ( GL_QUADS, 0, 4 );
 	}
 
-	void DrawSquareTextured(float x, float y, float z, float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f)
+	void DrawSquareTextured(float x, float y, const char* texturePath)
 	{
 		// Triangle vertices
 		GLfloat vVertices[] = 	{
-								 x, y, z,			// Top left
-								 x+0.2f, y, z,		// Top right
-								 x+0.2f, y-0.2f, z,	// Bottom right
-								 x, y-0.2f, z		// Bottom left
+								 x,      y,      0.0f,	// Top left
+								 x+0.2f, y,      0.0f,	// Top right
+								 x+0.2f, y-0.2f, 0.0f,	// Bottom right
+								 x,      y-0.2f, 0.0f	// Bottom left
 								};
 		// Load the vertex data
 		glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
 		glEnableVertexAttribArray ( 0 );
 
-		// Colour array
-		float colours[] =	{
-							 red, green, blue, alpha,
-							 red, green, blue, alpha,
-							 red, green, blue, alpha,
-							 red, green, blue, alpha
-							};
-		// Load the colour data
-		glVertexAttribPointer ( 1, 4, GL_FLOAT, GL_FALSE, 0, colours );
-		glEnableVertexAttribArray ( 1 );
-
 		// Texture coord
 		GLfloat texCoord[] = 	{
-								 1.0f, 1.0f,		// Top right
-								 0.0f, 1.0f,		// Top left
 								 0.0f, 0.0f,		// Bottom left
 								 1.0f, 0.0f,		// Bottom right
+								 1.0f, 1.0f,		// Top right
+								 0.0f, 1.0f,		// Top left
 								};
-		// Load the vertex data
+		// Load the texture data
 		glVertexAttribPointer ( 2, 2, GL_FLOAT, GL_FALSE, 0, texCoord );
 		glEnableVertexAttribArray ( 2 );
 
-		LoadTexture("../checkerboard.jpg");
+		LoadTexture(texturePath);
 
 		glDrawArrays ( GL_QUADS, 0, 4 );
 	}
@@ -149,13 +140,17 @@ namespace opengles_workspace
 
 	void DrawCheckerboardTextured()
 	{
-		for(int i = 0; i < 5; i++)
+		for(int i = 0; i < 10; i++)
 		{
-			float stepX = (float)i/5;
-			for(int j = 0; j< 5; j++)
+			float stepY = (float)i/(float)5;
+			for(int j = 0; j< 10; j++)
 			{
-				float stepY = (float)j/5;
-				DrawSquareTextured((-0.5f+stepX), (0.5f-stepY), 0.0f);
+				float stepX = (float)j/(float)5;
+
+				std::string texturePathStr = GameLogic::GetShapeAt(i,j).GetTexturePath();
+				const char* texturePath = texturePathStr.c_str();
+
+				DrawSquareTextured(( -1.0f + stepX ), ( 1.0f - stepY ), texturePath);
 			}
 		}
 	}
@@ -217,23 +212,19 @@ namespace opengles_workspace
 
 		// Use the program object
 		glUseProgram ( programObject );
-	}
-
-	void GLFWRenderer::render() {
-		// GL code begin
 
 		// Set the viewport
 		GLint windowWidth, windowHeight;
     	glfwGetWindowSize(window(), &windowWidth, &windowHeight);
 		glViewport ( 0, 0, windowWidth, windowHeight );
+	}
+
+	void GLFWRenderer::render() {
+		// GL code begin
 
 		// Clear the color buffer
 		glClear ( GL_COLOR_BUFFER_BIT );
 
-		//DrawTriangle(0.0f, 0.5f, 0.0f);
-		//DrawSquare(-1.0f, 1.0f, 0.0f);
-		//DrawCheckerboard(10);
-		//DrawSquareTextured(-1.0f, 1.0f, 0.0f);
 		DrawCheckerboardTextured();
 
 		// GL code end
