@@ -42,61 +42,9 @@ namespace opengles_workspace
 		else { printf("Failed to load texture at [%s]\n", path); }
 	}
 
-	void DrawTriangle(float x, float y, float z, float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f)
+	void DrawGameShape(float x, float y, const char* texturePath)
 	{
-		// Triangle vertices
-		GLfloat vVertices[] = 	{
-								 x, y, z,			// Top
-								 x-0.5f, y-1.0f, z,	// Bottom left
-								 x+0.5f, y-1.0f, z	// Bottom right
-								};
-		// Load the vertex data
-		glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
-		glEnableVertexAttribArray ( 0 );
-
-		// Colour array
-		float colours[] =	{
-							 red, green, blue, alpha,
-							 red, green, blue, alpha,
-							 red, green, blue, alpha
-							};
-		// Load the colour data
-		glVertexAttribPointer ( 1, 3, GL_FLOAT, GL_FALSE, 0, colours );
-		glEnableVertexAttribArray ( 1 );
-
-		glDrawArrays ( GL_TRIANGLES, 0, 3 );
-	}
-
-	void DrawSquare(float x, float y, float z, float red = 1.0f, float green = 1.0f, float blue = 1.0f, float alpha = 1.0f)
-	{
-		// Triangle vertices
-		GLfloat vVertices[] = 	{
-								 x, y, z,			// Top left
-								 x+0.2f, y, z,		// Top right
-								 x+0.2f, y-0.2f, z,	// Bottom right
-								 x, y-0.2f, z		// Bottom left
-								};
-		// Load the vertex data
-		glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
-		glEnableVertexAttribArray ( 0 );
-
-		// Colour array
-		float colours[] =	{
-							 red, green, blue, alpha,
-							 red, green, blue, alpha,
-							 red, green, blue, alpha,
-							 red, green, blue, alpha
-							};
-		// Load the colour data
-		glVertexAttribPointer ( 1, 4, GL_FLOAT, GL_FALSE, 0, colours );
-		glEnableVertexAttribArray ( 1 );
-
-		glDrawArrays ( GL_QUADS, 0, 4 );
-	}
-
-	void DrawSquareTextured(float x, float y, const char* texturePath)
-	{
-		// Triangle vertices
+		// Shape square vertices
 		GLfloat vVertices[] = 	{
 								 x,      y,      0.0f,	// Top left
 								 x+0.2f, y,      0.0f,	// Top right
@@ -123,22 +71,7 @@ namespace opengles_workspace
 		glDrawArrays ( GL_QUADS, 0, 4 );
 	}
 
-	void DrawCheckerboard(int size)
-	{
-		for(int i = 0; i < size; i++)
-		{
-			float stepX = (float)i/(size/2);
-			float isRed = (i % 2 != 0) ? 1.0f : 0.0f;
-			for(int j = 0; j< size; j++)
-			{
-				float stepY = (float)j/(size/2);
-				isRed = (isRed == 1.0f) ? 0.0f : 1.0f; // Invert colour on every new line
-				DrawSquare((-1.0f+stepX), (1.0f-stepY), 0.0f, 1.0f, (1.0f-isRed), (1.0f-isRed));
-			}
-		}
-	}
-
-	void DrawCheckerboardTextured()
+	void DrawGameBoard()
 	{
 		for(int i = 0; i < 10; i++)
 		{
@@ -150,7 +83,7 @@ namespace opengles_workspace
 				std::string texturePathStr = GameLogic::GetShapeAt(i,j).GetTexturePath();
 				const char* texturePath = texturePathStr.c_str();
 
-				DrawSquareTextured(( -1.0f + stepX ), ( 1.0f - stepY ), texturePath);
+				DrawGameShape(( -1.0f + stepX ), ( 1.0f - stepY ), texturePath);
 			}
 		}
 	}
@@ -159,15 +92,12 @@ namespace opengles_workspace
 		"#version 300 es \n"
 		"\n"
 		"layout(location = 0) in vec4 a_position; \n"
-		"layout(location = 1) in vec4 a_colour; \n"
 		"layout(location = 2) in vec2 a_textures; \n"
-		"out vec4 v_colour; \n"
 		"out vec2 v_textures; \n"
 		"\n"
 		"void main() \n"
 		"{ \n"
 		" gl_Position = a_position; \n"
-		" v_colour = a_colour; \n"
 		" v_textures = a_textures; \n"
 		"} \n";
 	
@@ -175,7 +105,6 @@ namespace opengles_workspace
 		"#version 300 es \n"
 		"precision mediump float; \n"
 		"\n"
-		"in vec4 v_colour; \n"
 		"in vec2 v_textures; \n"
 		"out vec4 fragColor; \n"
 		"uniform sampler2D ourTexture; \n"
@@ -184,8 +113,6 @@ namespace opengles_workspace
 		"{ \n"
 		" fragColor =  texture(ourTexture, v_textures); \n"
 		"} \n";
-
-	GLuint programObject;
 
 	GLFWRenderer::GLFWRenderer(std::shared_ptr<Context> context)
 		: mContext(std::move(context))
@@ -203,7 +130,7 @@ namespace opengles_workspace
 		glCompileShader(fragmentShader);
 
 		// Create the program object
-		programObject = glCreateProgram();
+		GLuint programObject = glCreateProgram();
 		glAttachShader ( programObject, vertexShader );
 		glAttachShader ( programObject, fragmentShader );
 
@@ -225,7 +152,7 @@ namespace opengles_workspace
 		// Clear the color buffer
 		glClear ( GL_COLOR_BUFFER_BIT );
 
-		DrawCheckerboardTextured();
+		DrawGameBoard();
 
 		// GL code end
 		glfwSwapBuffers(window());

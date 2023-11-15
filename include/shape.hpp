@@ -10,6 +10,12 @@
             RED,
             GREEN,
             BLUE,
+            CYAN,
+            MAGENTA,
+            YELLOW,
+            LIME,
+            BEIGE,
+            PINK
         };
         enum ShapeStatus
         {

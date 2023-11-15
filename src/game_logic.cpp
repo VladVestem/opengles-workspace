@@ -177,22 +177,26 @@ namespace opengles_workspace
         case VERTICAL:
             for(int i = 0; i <= sameShapesCountDir1; i++)
             {
-                shapeMatrix[I-i][J].SetColour(BASE);
+                //shapeMatrix[I-i][J].SetColour(BASE);
+                shapeMatrix[I-i][J].SetRandomColour();
             }
             for(int i = 0; i <= sameShapesCountDir2; i++)
             {
-                shapeMatrix[I+i][J].SetColour(BASE);
+                //shapeMatrix[I+i][J].SetColour(BASE);
+                shapeMatrix[I+i][J].SetRandomColour();
             }
             
             break;
         case HORIZONTAL:
             for(int j = 0; j <= sameShapesCountDir1; j++)
             {
-                shapeMatrix[I][J-j].SetColour(BASE);
+                //shapeMatrix[I][J-j].SetColour(BASE);
+                shapeMatrix[I][J-j].SetRandomColour();
             }
             for(int j = 0; j <= sameShapesCountDir2; j++)
             {
-                shapeMatrix[I][J+j].SetColour(BASE);
+                //shapeMatrix[I][J+j].SetColour(BASE);
+                shapeMatrix[I][J+j].SetRandomColour();
             }
             break;
         default:

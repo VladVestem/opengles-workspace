@@ -40,7 +40,7 @@ GlfwApplication::~GlfwApplication() {
 }
 
 int GlfwApplication::run() {
-	auto pWindow = std::unique_ptr<GLFWwindow, GLFWwindowDeleter>(glfwCreateWindow(mWidth, mHeight, "OpenGL ES workspace", nullptr, nullptr), destroyGlfwWindow);
+	auto pWindow = std::unique_ptr<GLFWwindow, GLFWwindowDeleter>(glfwCreateWindow(mWidth, mHeight, "ShapeShifter", nullptr, nullptr), destroyGlfwWindow);
 	if(!pWindow) {
 		throw Exception("Failed to create GLFW window");
 	}
