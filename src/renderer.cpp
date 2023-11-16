@@ -15,6 +15,9 @@
 
 #include <game_logic.hpp>
 
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
 namespace opengles_workspace
 {
 	void LoadTexture(const char* path)
@@ -40,6 +43,91 @@ namespace opengles_workspace
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
 		else { printf("Failed to load texture at [%s]\n", path); }
+	}
+
+	FT_Face face;
+	void InitFT()
+	{
+		// FreeType
+		// ------------------------------------------------------------------------------
+		// Init FreeType
+		FT_Library ft;
+		if(FT_Init_FreeType(&ft))
+		{
+			fprintf(stderr, "Could not init freetype library\n");
+		}
+		// Load font as FT_Face
+		if(FT_New_Face(ft, "../images/font.ttf", 0, &face))
+		{
+			fprintf(stderr, "Could not open font\n");
+		}
+		// Set font size
+		FT_Set_Pixel_Sizes(face, 0, 48);
+		// ------------------------------------------------------------------------------
+	}
+
+	void DrawGameText(float x, float y, FT_Face& face, char charToRender)
+	{
+		// Load glyph of character
+		if(FT_Load_Char(face, charToRender, FT_LOAD_RENDER))
+		{
+			fprintf(stderr, "Could not load character '%d'\n", charToRender);
+		}
+
+		float bitmapW = (float)face->glyph->bitmap.width/(float)200;
+		float bitmapH = (float)face->glyph->bitmap.rows/(float)200;
+
+		// Score square vertices
+		GLfloat vVertices[] = 	{
+								 x,			y,			0.0f,	// Top left
+								 x+bitmapW,	y,			0.0f,	// Top right
+								 x+bitmapW,	y-bitmapH,	0.0f,	// Bottom right
+								 x,			y-bitmapH,	0.0f	// Bottom left
+								};
+		// Load the vertex data
+		glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
+		glEnableVertexAttribArray ( 0 );
+
+		// Texture coord
+		GLfloat texCoord[] = 	{
+								 0.0f, 0.0f,		// Bottom left
+								 1.0f, 0.0f,		// Bottom right
+								 1.0f, 1.0f,		// Top right
+								 0.0f, 1.0f,		// Top left
+								};
+		// Load the texture data
+		glVertexAttribPointer ( 2, 2, GL_FLOAT, GL_FALSE, 0, texCoord );
+		glEnableVertexAttribArray ( 2 );
+
+		unsigned int texture;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		// set the texture wrapping/filtering options (on currently bound texture)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		// load and generate the texture
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width, face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		glDrawArrays ( GL_QUADS, 0, 4 );
+	}
+
+	void DrawGameScore()
+	{
+		int score = GameLogic::GetScore();
+		std::string scoreString = std::to_string(score) + " score";
+
+		float stepX = 0.0f;
+		for(char c : scoreString)
+		{
+			DrawGameText(-1.0f + stepX, 1.0f, face, c);
+			stepX += (float)face->glyph->bitmap.width/(float)100;
+		}
 	}
 
 	void DrawGameShape(float x, float y, const char* texturePath)
@@ -83,7 +171,7 @@ namespace opengles_workspace
 				std::string texturePathStr = GameLogic::GetShapeAt(i,j).GetTexturePath();
 				const char* texturePath = texturePathStr.c_str();
 
-				DrawGameShape(( -1.0f + stepX ), ( 1.0f - stepY ), texturePath);
+				DrawGameShape(( -1.0f + stepX ), ( 0.8f - stepY ), texturePath);
 			}
 		}
 	}
@@ -144,6 +232,8 @@ namespace opengles_workspace
 		GLint windowWidth, windowHeight;
     	glfwGetWindowSize(window(), &windowWidth, &windowHeight);
 		glViewport ( 0, 0, windowWidth, windowHeight );
+
+		InitFT();
 	}
 
 	void GLFWRenderer::render() {
@@ -153,6 +243,7 @@ namespace opengles_workspace
 		glClear ( GL_COLOR_BUFFER_BIT );
 
 		DrawGameBoard();
+		DrawGameScore();
 
 		// GL code end
 		glfwSwapBuffers(window());

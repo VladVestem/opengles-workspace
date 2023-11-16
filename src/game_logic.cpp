@@ -30,6 +30,11 @@ namespace opengles_workspace
         return shapeMatrix[i][j];
     }
 
+    int GameLogic::GetScore()
+    {
+        return score;
+    }
+
     void GameLogic::CheckShift(Shape& firstShape, Shape& secondShape, Direction direction)
     {
         int firstI = currentI;

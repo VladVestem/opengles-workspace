@@ -28,6 +28,7 @@ namespace opengles_workspace
         ~GameLogic() {};
 
         static Shape GetShapeAt(int, int);
+        static int GetScore();
 
         static void CheckShift(Shape&, Shape&, Direction);
         static void CalculateScore(Shape&, int, int);
