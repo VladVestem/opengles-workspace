@@ -25,4 +25,4 @@ add_executable(ShapeShifter
     main.cpp
 )
 
-target_link_libraries(ShapeShifter ShapeShifter_lib glfw ${GLFW_LIBRARIES})
+target_link_libraries(ShapeShifter ShapeShifter_lib glfw freetype ${GLFW_LIBRARIES})
