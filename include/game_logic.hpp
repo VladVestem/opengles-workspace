@@ -1,5 +1,7 @@
 #include <shape.hpp>
 
+ #ifndef gamelogic
+ #define gamelogic
 namespace opengles_workspace
 {
     enum Direction
@@ -17,17 +19,24 @@ namespace opengles_workspace
 
     class GameLogic
     {
+    public:
+        const static int gameBoardSize = 9;
+
     private:
-        static Shape shapeMatrix[10][10];
+        static Shape shapeMatrix[gameBoardSize][gameBoardSize];
         static int currentI;
         static int currentJ;
         static int score;
 
     public:
+        static bool isSomethingSelected;
+
         GameLogic();
         ~GameLogic() {};
 
         static Shape GetShapeAt(int, int);
+        static int GetCurrentI();
+        static int GetCurrentJ();
         static int GetScore();
 
         static void CheckShift(Shape&, Shape&, Direction);
@@ -39,3 +48,4 @@ namespace opengles_workspace
 
     };
 }
+#endif

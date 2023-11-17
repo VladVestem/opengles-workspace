@@ -3,10 +3,12 @@
 
 namespace opengles_workspace
 {
-    Shape GameLogic::shapeMatrix[10][10];
+    const int GameLogic::gameBoardSize;
+    Shape GameLogic::shapeMatrix[gameBoardSize][gameBoardSize];
     int GameLogic::currentI = 0;
     int GameLogic::currentJ = 0;
     int GameLogic::score = 0;
+    bool GameLogic::isSomethingSelected = false;
 
     #define currentShape shapeMatrix[currentI][currentJ]
     #define shapeUp shapeMatrix[currentI - 1][currentJ]
@@ -16,9 +18,9 @@ namespace opengles_workspace
 
     GameLogic::GameLogic()
     {
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < gameBoardSize; i++)
         {
-            for (int j = 0; j < 10; j++)
+            for (int j = 0; j < gameBoardSize; j++)
             {
                 shapeMatrix[i][j].SetRandomColour();
             }
@@ -28,6 +30,16 @@ namespace opengles_workspace
     Shape GameLogic::GetShapeAt(int i, int j)
     {
         return shapeMatrix[i][j];
+    }
+
+    int GameLogic::GetCurrentI()
+    {
+        return currentI;
+    }
+
+        int GameLogic::GetCurrentJ()
+    {
+        return currentJ;
     }
 
     int GameLogic::GetScore()
@@ -119,7 +131,7 @@ namespace opengles_workspace
             }
         }
         // DOWN
-        for(int i = I + 1; i <= 9; i++)
+        for(int i = I + 1; i <= gameBoardSize - 1; i++)
         {
             Shape checkedShape = GetShapeAt(i,J);
             if(checkedShape.GetColour() == initialShape.GetColour())
@@ -138,7 +150,7 @@ namespace opengles_workspace
             }
         }
         // RIGHT
-        for(int j = J + 1; j <= 9; j++)
+        for(int j = J + 1; j <= gameBoardSize - 1; j++)
         {
             Shape checkedShape = GetShapeAt(I,j);
             if(checkedShape.GetColour() == initialShape.GetColour())
@@ -229,6 +241,7 @@ namespace opengles_workspace
                 }
                 else
                 {
+                    isSomethingSelected = false;
                     printf("Moved UP --- %s[%d][%d] -> %s[%d][%d]\n",
                                                                      currentShape.GetColourAsString(), currentI, currentJ,
                                                                      shapeUp.GetColourAsString(), currentI - 1, currentJ);
@@ -255,6 +268,7 @@ namespace opengles_workspace
                 }
                 else
                 {
+                    isSomethingSelected = false;
                     printf("Moved LEFT --- %s[%d][%d] -> %s[%d][%d]\n",
                                                                        currentShape.GetColourAsString(), currentI, currentJ,
                                                                        shapeLeft.GetColourAsString(), currentI, currentJ - 1);
@@ -268,7 +282,7 @@ namespace opengles_workspace
             }
             break;
         case DOWN:
-            if (currentI < 9)
+            if (currentI < gameBoardSize - 1)
             {
                 if (currentShape.GetStatus() == SELECTED)
                 {
@@ -281,6 +295,7 @@ namespace opengles_workspace
                 }
                 else
                 {
+                    isSomethingSelected = false;
                     printf("Moved DOWN --- %s[%d][%d] -> %s[%d][%d]\n",
                                                                        currentShape.GetColourAsString(), currentI, currentJ,
                                                                        shapeDown.GetColourAsString(), currentI + 1, currentJ);
@@ -294,7 +309,7 @@ namespace opengles_workspace
             }
             break;
         case RIGHT:
-            if (currentJ < 9)
+            if (currentJ < gameBoardSize - 1)
             {
                 if (currentShape.GetStatus() == SELECTED)
                 {
@@ -307,6 +322,7 @@ namespace opengles_workspace
                 }
                 else
                 {
+                    isSomethingSelected = false;
                     printf("Moved RIGHT --- %s[%d][%d] -> %s[%d][%d]\n",
                                                                         currentShape.GetColourAsString(), currentI, currentJ,
                                                                         shapeRight.GetColourAsString(), currentI, currentJ + 1);
@@ -331,11 +347,13 @@ namespace opengles_workspace
         if (currentShape.GetStatus() != SELECTED)
         {
             currentShape.SetStatus(SELECTED);
+            isSomethingSelected = true;
             printf("Selected %s[%d][%d]\n", currentShape.GetColourAsString(), currentI, currentJ);
         }
         else
         {
             currentShape.SetStatus(SELECTABLE);
+            isSomethingSelected = false;
             printf("Deselected %s[%d][%d]\n", currentShape.GetColourAsString(), currentI, currentJ);
         }
     }

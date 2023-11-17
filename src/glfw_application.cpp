@@ -9,8 +9,6 @@
 #include <iostream>
 #include <cassert>
 
-#include <game_logic.hpp>
-
 #define GLFW_WINDOW(ptr) reinterpret_cast<GLFWwindow*>(ptr)
 
 namespace opengles_workspace
@@ -64,22 +62,50 @@ int GlfwApplication::run() {
 			}
 			if (key == Key::W && keyMode == KeyMode::PRESS) {
 				GameLogic::Move(UP);
-				pRenderer->render();
+				if(GameLogic::isSomethingSelected)
+				{
+					pRenderer->render();
+				}
+				else
+				{
+					pRenderer->renderOnlyCursor(UP);
+				}
 				return false;
 			}
 			if (key == Key::A && keyMode == KeyMode::PRESS) {
 				GameLogic::Move(LEFT);
-				pRenderer->render();
+				if(GameLogic::isSomethingSelected)
+				{
+					pRenderer->render();
+				}
+				else
+				{
+					pRenderer->renderOnlyCursor(LEFT);
+				}
 				return false;
 			}
 			if (key == Key::S && keyMode == KeyMode::PRESS) {
 				GameLogic::Move(DOWN);
-				pRenderer->render();
+				if(GameLogic::isSomethingSelected)
+				{
+					pRenderer->render();
+				}
+				else
+				{
+					pRenderer->renderOnlyCursor(DOWN);
+				}
 				return false;
 			}
 			if (key == Key::D && keyMode == KeyMode::PRESS) {
 				GameLogic::Move(RIGHT);
-				pRenderer->render();
+				if(GameLogic::isSomethingSelected)
+				{
+					pRenderer->render();
+				}
+				else
+				{
+					pRenderer->renderOnlyCursor(RIGHT);
+				}
 				return false;
 			}
 			return true;

@@ -13,13 +13,27 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#include <game_logic.hpp>
-
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
 namespace opengles_workspace
 {
+	float scoreX = -0.9f;
+	float scoreY = 1.0f;
+	float boardX = -0.9f;
+	float boardY = 0.8f;
+	float boardSquareSize = 0.2f;
+
+	float ItoYcoord(int I)
+	{
+		return boardY-(boardSquareSize*I);
+	}
+
+	float JtoXcoord(int J)
+	{
+		return boardX+(boardSquareSize*J);
+	}
+
 	void LoadTexture(const char* path)
 	{
 		unsigned int texture;
@@ -42,14 +56,15 @@ namespace opengles_workspace
 			GL_UNSIGNED_BYTE, data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
-		else { printf("Failed to load texture at [%s]\n", path); }
+		else
+		{
+			printf("Failed to load texture at [%s]\n", path);
+		}
 	}
 
 	FT_Face face;
 	void InitFT()
 	{
-		// FreeType
-		// ------------------------------------------------------------------------------
 		// Init FreeType
 		FT_Library ft;
 		if(FT_Init_FreeType(&ft))
@@ -57,38 +72,42 @@ namespace opengles_workspace
 			fprintf(stderr, "Could not init freetype library\n");
 		}
 		// Load font as FT_Face
-		if(FT_New_Face(ft, "../images/font.ttf", 0, &face))
+		if(FT_New_Face(ft, "../font/font.ttf", 0, &face))
 		{
 			fprintf(stderr, "Could not open font\n");
 		}
 		// Set font size
 		FT_Set_Pixel_Sizes(face, 0, 48);
-		// ------------------------------------------------------------------------------
 	}
 
-	void DrawGameText(float x, float y, FT_Face& face, char charToRender)
+	void DrawGameText(float x, float y, FT_Bitmap bitmap)
 	{
-		// Load glyph of character
-		if(FT_Load_Char(face, charToRender, FT_LOAD_RENDER))
-		{
-			fprintf(stderr, "Could not load character '%d'\n", charToRender);
-		}
+		// Get bitmap data and dimensions
+		unsigned char* bitmapCharData = bitmap.buffer;
+		float bitmapWidth = (float)bitmap.width/200.0f;
+		float bitmapHeight = (float)bitmap.rows/200.0f;
 
-		float bitmapW = (float)face->glyph->bitmap.width/(float)200;
-		float bitmapH = (float)face->glyph->bitmap.rows/(float)200;
+		// Set center offsets to correctly draw the character in the center of designated coordinates
+		float centerOffsetX = (boardSquareSize - bitmapWidth)/2.0f;
+		float leftX = x + centerOffsetX;
+		float rightX = leftX + bitmapWidth;
 
-		// Score square vertices
+		float centerOffsetY = (boardSquareSize - bitmapHeight)/2.0f;
+		float topY = y - centerOffsetY;
+		float bottomY = topY - bitmapHeight;
+
+		// Character square vertices
 		GLfloat vVertices[] = 	{
-								 x,			y,			0.0f,	// Top left
-								 x+bitmapW,	y,			0.0f,	// Top right
-								 x+bitmapW,	y-bitmapH,	0.0f,	// Bottom right
-								 x,			y-bitmapH,	0.0f	// Bottom left
+								 leftX,		topY,		0.0f,	// Top left
+								 rightX,	topY,		0.0f,	// Top right
+								 rightX,	bottomY,	0.0f,	// Bottom right
+								 leftX,		bottomY,	0.0f	// Bottom left
 								};
 		// Load the vertex data
 		glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
 		glEnableVertexAttribArray ( 0 );
 
-		// Texture coord
+		// Texture coordinates
 		GLfloat texCoord[] = 	{
 								 0.0f, 0.0f,		// Bottom left
 								 1.0f, 0.0f,		// Bottom right
@@ -103,47 +122,62 @@ namespace opengles_workspace
 		glGenTextures(1, &texture);
 		glBindTexture(GL_TEXTURE_2D, texture);
 
-		// set the texture wrapping/filtering options (on currently bound texture)
+		// Set the texture wrapping/filtering options (on currently bound texture)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		// load and generate the texture
+		// Load and generate the texture
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, face->glyph->bitmap.width, face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, face->glyph->bitmap.buffer);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, bitmap.width, bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE, bitmap.buffer);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		glDrawArrays ( GL_QUADS, 0, 4 );
 	}
 
-	void DrawGameScore()
+	void DrawGameScore(float x, float y)
 	{
 		int score = GameLogic::GetScore();
-		std::string scoreString = std::to_string(score) + " score";
+		std::string scoreString = "SCORE-" + std::to_string(score);
 
-		float stepX = 0.0f;
-		for(char c : scoreString)
+		float X = x;
+		float Y = y;
+		for(char charToRender : scoreString)
 		{
-			DrawGameText(-1.0f + stepX, 1.0f, face, c);
-			stepX += (float)face->glyph->bitmap.width/(float)100;
+			// Load glyph of character
+			if(FT_Load_Char(face, charToRender, FT_LOAD_RENDER))
+			{
+				fprintf(stderr, "Could not load character '%d'\n", charToRender);
+			}
+			FT_Bitmap bitmap = face->glyph->bitmap;			
+
+			DrawGameText(X, Y, bitmap);
+			X += boardSquareSize;
 		}
 	}
 
 	void DrawGameShape(float x, float y, const char* texturePath)
 	{
+		// Set correct coordinates
+		float leftX = x;
+		float rightX = leftX + boardSquareSize;
+
+		float topY = y;
+		float bottomY = topY - boardSquareSize;
+
 		// Shape square vertices
 		GLfloat vVertices[] = 	{
-								 x,      y,      0.0f,	// Top left
-								 x+0.2f, y,      0.0f,	// Top right
-								 x+0.2f, y-0.2f, 0.0f,	// Bottom right
-								 x,      y-0.2f, 0.0f	// Bottom left
+								 leftX,		topY,		0.0f,	// Top left
+								 rightX,	topY,		0.0f,	// Top right
+								 rightX,	bottomY,	0.0f,	// Bottom right
+								 leftX,		bottomY,	0.0f	// Bottom left
 								};
 		// Load the vertex data
 		glVertexAttribPointer ( 0, 3, GL_FLOAT, GL_FALSE, 0, vVertices );
 		glEnableVertexAttribArray ( 0 );
 
-		// Texture coord
+		// Texture coordinates
 		GLfloat texCoord[] = 	{
 								 0.0f, 0.0f,		// Bottom left
 								 1.0f, 0.0f,		// Bottom right
@@ -159,20 +193,27 @@ namespace opengles_workspace
 		glDrawArrays ( GL_QUADS, 0, 4 );
 	}
 
-	void DrawGameBoard()
+	void DrawGameBoard(float x, float y)
 	{
-		for(int i = 0; i < 10; i++)
-		{
-			float stepY = (float)i/(float)5;
-			for(int j = 0; j< 10; j++)
-			{
-				float stepX = (float)j/(float)5;
+		float X = x;
+		float Y = y;
 
-				std::string texturePathStr = GameLogic::GetShapeAt(i,j).GetTexturePath();
+		for(int rows = 0; rows < GameLogic::gameBoardSize; rows++)
+		{
+			// Reset X coordinate every row
+			X = x;
+			for(int columns = 0; columns < GameLogic::gameBoardSize; columns++)
+			{
+				// Get texture path of shape at specific row & column
+				std::string texturePathStr = GameLogic::GetShapeAt(rows,columns).GetTexturePath();
 				const char* texturePath = texturePathStr.c_str();
 
-				DrawGameShape(( -1.0f + stepX ), ( 0.8f - stepY ), texturePath);
+				DrawGameShape(X, Y, texturePath);
+				// Increase X coordinate after every collumn finished rendering
+				X += boardSquareSize;
 			}
+			// Decrease Y coordinate after row finished rendering
+			Y -= boardSquareSize;
 		}
 	}
 	
@@ -233,6 +274,7 @@ namespace opengles_workspace
     	glfwGetWindowSize(window(), &windowWidth, &windowHeight);
 		glViewport ( 0, 0, windowWidth, windowHeight );
 
+		// Init FreeType
 		InitFT();
 	}
 
@@ -242,10 +284,59 @@ namespace opengles_workspace
 		// Clear the color buffer
 		glClear ( GL_COLOR_BUFFER_BIT );
 
-		DrawGameBoard();
-		DrawGameScore();
+		DrawGameBoard(boardX, boardY);
+		DrawGameScore(scoreX, scoreY);
 
 		// GL code end
+		glfwSwapBuffers(window());
+	}
+
+	void GLFWRenderer::renderOnlyCursor(Direction direction)
+	{
+		// Get indexes of current shape
+		int i = GameLogic::GetCurrentI();
+		int j = GameLogic::GetCurrentJ();
+
+		// Convert indexes to coordinates
+		float x = JtoXcoord(j);
+		float y = ItoYcoord(i);
+
+		// Get texture path of current shape
+		std::string texturePathStr = GameLogic::GetShapeAt(i,j).GetTexturePath();
+		const char* texturePath = texturePathStr.c_str();
+
+		// Redraw only current shape
+		DrawGameShape(x, y, texturePath);
+
+		switch (direction)
+		{
+		case UP:
+			i++;
+			break;
+		case LEFT:
+			j++;
+			break;
+		case DOWN:
+			i--;
+			break;
+		case RIGHT:
+			j--;
+			break;
+		default:
+			break;
+		}
+
+		// Convert indexes to coordinates
+		x = JtoXcoord(j);
+		y = ItoYcoord(i);
+
+		// Get texture path of current shape
+		texturePathStr = GameLogic::GetShapeAt(i,j).GetTexturePath();
+		texturePath = texturePathStr.c_str();
+
+		// Redraw only current shape
+		DrawGameShape(x, y, texturePath);
+
 		glfwSwapBuffers(window());
 	}
 

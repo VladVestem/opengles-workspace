@@ -4,10 +4,11 @@
 #include <context.hpp>
 #include <polled_object.hpp>
 
-
 #include <glad/gl.h>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+
+#include <game_logic.hpp>
 
 namespace opengles_workspace
 {
@@ -19,6 +20,8 @@ class GLFWRenderer : public PolledObject
 		~GLFWRenderer() = default;
 
 		void render();
+
+		void renderOnlyCursor(Direction);
 
 		bool poll() override;
 	private:
