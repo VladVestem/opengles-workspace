@@ -62,7 +62,7 @@ int GlfwApplication::run() {
 			}
 			if (key == Key::W && keyMode == KeyMode::PRESS) {
 				GameLogic::Move(UP);
-				if(GameLogic::isSomethingSelected)
+				if(GameLogic::GetSomethingSelectedFlag())
 				{
 					pRenderer->render();
 				}
@@ -74,7 +74,7 @@ int GlfwApplication::run() {
 			}
 			if (key == Key::A && keyMode == KeyMode::PRESS) {
 				GameLogic::Move(LEFT);
-				if(GameLogic::isSomethingSelected)
+				if(GameLogic::GetSomethingSelectedFlag())
 				{
 					pRenderer->render();
 				}
@@ -86,7 +86,7 @@ int GlfwApplication::run() {
 			}
 			if (key == Key::S && keyMode == KeyMode::PRESS) {
 				GameLogic::Move(DOWN);
-				if(GameLogic::isSomethingSelected)
+				if(GameLogic::GetSomethingSelectedFlag())
 				{
 					pRenderer->render();
 				}
@@ -98,7 +98,7 @@ int GlfwApplication::run() {
 			}
 			if (key == Key::D && keyMode == KeyMode::PRESS) {
 				GameLogic::Move(RIGHT);
-				if(GameLogic::isSomethingSelected)
+				if(GameLogic::GetSomethingSelectedFlag())
 				{
 					pRenderer->render();
 				}

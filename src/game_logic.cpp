@@ -10,11 +10,11 @@ namespace opengles_workspace
     int GameLogic::score = 0;
     bool GameLogic::isSomethingSelected = false;
 
-    #define currentShape shapeMatrix[currentI][currentJ]
-    #define shapeUp shapeMatrix[currentI - 1][currentJ]
-    #define shapeLeft shapeMatrix[currentI][currentJ - 1]
-    #define shapeDown shapeMatrix[currentI + 1][currentJ]
-    #define shapeRight shapeMatrix[currentI][currentJ + 1]
+    #define currentShape    shapeMatrix[currentI][currentJ]
+    #define shapeUp         shapeMatrix[currentI - 1][currentJ]
+    #define shapeLeft       shapeMatrix[currentI][currentJ - 1]
+    #define shapeDown       shapeMatrix[currentI + 1][currentJ]
+    #define shapeRight      shapeMatrix[currentI][currentJ + 1]
 
     GameLogic::GameLogic()
     {
@@ -27,26 +27,47 @@ namespace opengles_workspace
         }
     }
 
+    /// @brief Get shape at desired indexes
+    /// @param i first index
+    /// @param j second index
+    /// @return shapeMatrix[i][j]
     Shape GameLogic::GetShapeAt(int i, int j)
     {
         return shapeMatrix[i][j];
     }
 
+    /// @brief Get current shape I index
+    /// @return currentI
     int GameLogic::GetCurrentI()
     {
         return currentI;
     }
 
-        int GameLogic::GetCurrentJ()
+    /// @brief Get current shape J index
+    /// @return currentJ
+    int GameLogic::GetCurrentJ()
     {
         return currentJ;
     }
 
+    /// @brief Get current game score
+    /// @return score
     int GameLogic::GetScore()
     {
         return score;
     }
 
+    /// @brief Get flag for any shape being currently selected
+    /// @return isSomethingSelected (true = any shape is selected, false = no shape is selected)
+    bool GameLogic::GetSomethingSelectedFlag()
+    {
+        return isSomethingSelected;
+    }
+
+    /// @brief Check a shift made between two shapes
+    /// @param firstShape first shape to check
+    /// @param secondShape second shape to check
+    /// @param direction direction the shift was made in
     void GameLogic::CheckShift(Shape& firstShape, Shape& secondShape, Direction direction)
     {
         int firstI = currentI;
@@ -86,6 +107,10 @@ namespace opengles_workspace
         printf("Current score: %d\n", score);
     }
 
+    /// @brief Verify all four direction for a shape to check possible matches and calculate score
+    /// @param initialShape shape to check
+    /// @param I shape index i
+    /// @param J shape index j
     void GameLogic::CalculateScore(Shape& initialShape, int I, int J)
     {
         printf("Calculate score --- %s[%d][%d]\n",
@@ -174,11 +199,13 @@ namespace opengles_workspace
         int sameShapesCountHorizontal = sameShapesCountLEFT + sameShapesCountRIGHT + 1;
         printf("\t\tHorizontal same shape count: %d\n", sameShapesCountHorizontal);
 
+        // Check if we matched at least 3 shapes in vertical axis
         if(sameShapesCountVertical >= 3)
         {
             score += sameShapesCountVertical * 10;
             RandomizeCorrectShapes(I, J, sameShapesCountUP, sameShapesCountDOWN, VERTICAL);
         }
+        // Check if we matched at least 3 shapes in horizontal axis
         if(sameShapesCountHorizontal >= 3)
         {
             score += sameShapesCountHorizontal * 10;
@@ -186,17 +213,25 @@ namespace opengles_workspace
         }
     }
 
+    /// @brief Randomize all matched shapes on a certain axis
+    /// @param I initial shape index i
+    /// @param J initial shape index j
+    /// @param sameShapesCountDir1 same shape count in first direction
+    /// @param sameShapesCountDir2 same shape count in second direction
+    /// @param axis axis in which the shapes got matched (VERTICAL, HORIZONTAL)
     void GameLogic::RandomizeCorrectShapes(int I, int J, int sameShapesCountDir1, int sameShapesCountDir2, Axis axis)
     {
         //shapeMatrix[I][J].SetShapeColour(NONE);
         switch (axis)
         {
         case VERTICAL:
+            // UP
             for(int i = 0; i <= sameShapesCountDir1; i++)
             {
                 //shapeMatrix[I-i][J].SetColour(BASE);
                 shapeMatrix[I-i][J].SetRandomColour();
             }
+            // DOWN
             for(int i = 0; i <= sameShapesCountDir2; i++)
             {
                 //shapeMatrix[I+i][J].SetColour(BASE);
@@ -205,11 +240,13 @@ namespace opengles_workspace
             
             break;
         case HORIZONTAL:
+            // LEFT
             for(int j = 0; j <= sameShapesCountDir1; j++)
             {
                 //shapeMatrix[I][J-j].SetColour(BASE);
                 shapeMatrix[I][J-j].SetRandomColour();
             }
+            // RIGHT
             for(int j = 0; j <= sameShapesCountDir2; j++)
             {
                 //shapeMatrix[I][J+j].SetColour(BASE);
@@ -219,9 +256,10 @@ namespace opengles_workspace
         default:
             break;
         }
-
     }
 
+    /// @brief Move cursor or shift shapes
+    /// @param direction movement direction (UP, LEFT, DOWN, RIGHT)
     void GameLogic::Move(Direction direction)
     {
         ShapeColour currentShapeColour = currentShape.GetColour();
@@ -230,6 +268,7 @@ namespace opengles_workspace
         case UP:
             if (currentI > 0)
             {
+                // Check if a shift needs to be done instead
                 if (currentShape.GetStatus() == SELECTED)
                 {
                     currentShape.SetColour(shapeUp.GetColour());
@@ -239,7 +278,7 @@ namespace opengles_workspace
                                                                        currentShape.GetColourAsString(), currentI - 1, currentJ);
                     CheckShift(currentShape, shapeUp, UP);
                 }
-                else
+                else    // just move cursor
                 {
                     isSomethingSelected = false;
                     printf("Moved UP --- %s[%d][%d] -> %s[%d][%d]\n",
@@ -249,7 +288,7 @@ namespace opengles_workspace
                 currentShape.SetStatus(NONE);
                 currentI--;
             }
-            else
+            else    // reached upper limit
             {
                 printf("Couldn't move UP anymore!\n");
             }
@@ -257,6 +296,7 @@ namespace opengles_workspace
         case LEFT:
             if (currentJ > 0)
             {
+                // Check if a shift needs to be done instead
                 if (currentShape.GetStatus() == SELECTED)
                 {
                     currentShape.SetColour(shapeLeft.GetColour());
@@ -266,7 +306,7 @@ namespace opengles_workspace
                                                                          currentShape.GetColourAsString(), currentI, currentJ - 1);
                     CheckShift(currentShape, shapeLeft, LEFT);
                 }
-                else
+                else    // just move cursor
                 {
                     isSomethingSelected = false;
                     printf("Moved LEFT --- %s[%d][%d] -> %s[%d][%d]\n",
@@ -276,7 +316,7 @@ namespace opengles_workspace
                 currentShape.SetStatus(NONE);
                 currentJ--;
             }
-            else
+            else    // reached left limit
             {
                 printf("Couldn't move LEFT anymore!\n");
             }
@@ -284,6 +324,7 @@ namespace opengles_workspace
         case DOWN:
             if (currentI < gameBoardSize - 1)
             {
+                // Check if a shift needs to be done instead
                 if (currentShape.GetStatus() == SELECTED)
                 {
                     currentShape.SetColour(shapeDown.GetColour());
@@ -293,7 +334,7 @@ namespace opengles_workspace
                                                                          currentShape.GetColourAsString(), currentI + 1, currentJ);
                     CheckShift(currentShape, shapeDown, DOWN);
                 }
-                else
+                else    // just move cursor
                 {
                     isSomethingSelected = false;
                     printf("Moved DOWN --- %s[%d][%d] -> %s[%d][%d]\n",
@@ -303,7 +344,7 @@ namespace opengles_workspace
                 currentShape.SetStatus(NONE);
                 currentI++;
             }
-            else
+            else    // reached lower limit
             {
                 printf("Couldn't move DOWN anymore!\n");
             }
@@ -311,6 +352,7 @@ namespace opengles_workspace
         case RIGHT:
             if (currentJ < gameBoardSize - 1)
             {
+                // Check if a shift needs to be done instead
                 if (currentShape.GetStatus() == SELECTED)
                 {
                     currentShape.SetColour(shapeRight.GetColour());
@@ -320,7 +362,7 @@ namespace opengles_workspace
                                                                           currentShape.GetColourAsString(), currentI, currentJ + 1);
                     CheckShift(currentShape, shapeRight, RIGHT);
                 }
-                else
+                else    // just move cursor
                 {
                     isSomethingSelected = false;
                     printf("Moved RIGHT --- %s[%d][%d] -> %s[%d][%d]\n",
@@ -330,7 +372,7 @@ namespace opengles_workspace
                 currentShape.SetStatus(NONE);
                 currentJ++;
             }
-            else
+            else    // reached right limit
             {
                 printf("Couldn't move RIGHT anymore!\n");
             }
@@ -342,6 +384,7 @@ namespace opengles_workspace
         currentShape.SetStatus(SELECTABLE);
     }
 
+    /// @brief Set current shape status as SELECTED (SELECTABLE if already SELECTED)
     void GameLogic::SelectShape()
     {
         if (currentShape.GetStatus() != SELECTED)

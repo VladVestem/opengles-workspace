@@ -27,10 +27,9 @@ namespace opengles_workspace
         static int currentI;
         static int currentJ;
         static int score;
-
-    public:
         static bool isSomethingSelected;
 
+    public:
         GameLogic();
         ~GameLogic() {};
 
@@ -38,6 +37,7 @@ namespace opengles_workspace
         static int GetCurrentI();
         static int GetCurrentJ();
         static int GetScore();
+        static bool GetSomethingSelectedFlag();
 
         static void CheckShift(Shape&, Shape&, Direction);
         static void CalculateScore(Shape&, int, int);
@@ -45,7 +45,6 @@ namespace opengles_workspace
 
         static void Move(Direction);
         static void SelectShape();
-
     };
 }
 #endif
